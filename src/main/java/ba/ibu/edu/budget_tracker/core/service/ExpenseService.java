@@ -6,6 +6,7 @@ import ba.ibu.edu.budget_tracker.core.model.Expense;
 import ba.ibu.edu.budget_tracker.core.model.User;
 import ba.ibu.edu.budget_tracker.core.repository.BudgetRepository;
 import ba.ibu.edu.budget_tracker.core.repository.ExpenseRepository;
+import ba.ibu.edu.budget_tracker.rest.dto.CategoryChartDto;
 import ba.ibu.edu.budget_tracker.rest.dto.ExpenseDto;
 import ba.ibu.edu.budget_tracker.rest.dto.ExpenseRequest;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,126 @@ public class ExpenseService {
                         expense.getUser().getId()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExpenseDto> filterExpenses(
+            Long userId,
+            Long categoryId,
+            Date startDate,
+            Date endDate,
+            Integer month,
+            Integer year,
+            Double minAmount,
+            Double maxAmount
+    ) {
+        List<Expense> expenses = expenseRepository.findByUserId(userId);
+
+        // Filter by category
+        if (categoryId != null) {
+            expenses = expenses.stream()
+                    .filter(expense -> expense.getCategory().getId().equals(categoryId))
+                    .toList();
+        }
+
+        // Filter by date range
+        if (startDate != null || endDate != null) {
+            expenses = expenses.stream()
+                    .filter(expense -> {
+                        Date expenseDate = expense.getDate();
+                        boolean matches = true;
+                        if (startDate != null) {
+                            matches = matches && !expenseDate.before(startDate);
+                        }
+                        if (endDate != null) {
+                            matches = matches && !expenseDate.after(endDate);
+                        }
+                        return matches;
+                    })
+                    .toList();
+        }
+
+        // Filter by month and/or year
+        if (month != null || year != null) {
+            expenses = expenses.stream()
+                    .filter(expense -> {
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(expense.getDate());
+                        boolean matches = true;
+                        if (month != null) {
+                            matches = matches && (cal.get(Calendar.MONTH) + 1 == month);
+                        }
+                        if (year != null) {
+                            matches = matches && (cal.get(Calendar.YEAR) == year);
+                        }
+                        return matches;
+                    })
+                    .toList();
+        }
+
+        // Filter by amount range
+        if (minAmount != null || maxAmount != null) {
+            expenses = expenses.stream()
+                    .filter(expense -> {
+                        boolean matches = true;
+                        if (minAmount != null) {
+                            matches = matches && (expense.getAmount() >= minAmount);
+                        }
+                        if (maxAmount != null) {
+                            matches = matches && (expense.getAmount() <= maxAmount);
+                        }
+                        return matches;
+                    })
+                    .toList();
+        }
+
+        // Map filtered expenses to DTOs
+        return expenses.stream()
+                .map(expense -> new ExpenseDto(
+                        expense.getId(),
+                        expense.getTitle(),
+                        expense.getAmount(),
+                        expense.getDate(),
+                        expense.getCategory().getId(),
+                        expense.getUser().getId()
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryChartDto> getCategoryChartData(
+            Long userId,
+            Date startDate,
+            Date endDate
+    ) {
+        List<Expense> expenses = expenseRepository.findByUserId(userId);
+
+        // Apply filters (similar logic as the filterExpenses method)
+        if (startDate != null || endDate != null) {
+            expenses = expenses.stream()
+                    .filter(expense -> {
+                        Date expenseDate = expense.getDate();
+                        boolean matches = true;
+                        if (startDate != null) {
+                            matches = matches && !expenseDate.before(startDate);
+                        }
+                        if (endDate != null) {
+                            matches = matches && !expenseDate.after(endDate);
+                        }
+                        return matches;
+                    })
+                    .toList();
+        }
+
+        // Group expenses by category and calculate totals
+        return expenses.stream()
+                .collect(Collectors.groupingBy(expense -> expense.getCategory().getId(), Collectors.counting()))
+                .entrySet().stream()
+                .map(entry -> new CategoryChartDto(
+                        entry.getKey(), // Category ID
+                        entry.getValue() // Count of expenses
+                ))
+                .toList();
     }
 
     public Optional<ExpenseDto> getExpenseById(Long id) {
