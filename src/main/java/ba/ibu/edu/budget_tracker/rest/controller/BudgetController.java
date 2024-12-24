@@ -38,15 +38,15 @@ public class BudgetController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdBudget);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<BudgetDto> updateBudget(@PathVariable Long id, @RequestBody BudgetRequest request) {
-        try {
-            BudgetDto updatedBudget = budgetService.updateBudget(id, request);
-            return ResponseEntity.ok(updatedBudget);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
+//    @PutMapping("/{id}")
+//    public ResponseEntity<BudgetDto> updateBudget(@PathVariable Long id, @RequestBody BudgetRequest request) {
+//        try {
+//            BudgetDto updatedBudget = budgetService.updateBudget(id, request);
+//            return ResponseEntity.ok(updatedBudget);
+//        } catch (IllegalArgumentException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+//        }
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBudget(@PathVariable Long id) {

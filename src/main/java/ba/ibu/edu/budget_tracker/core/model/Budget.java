@@ -1,7 +1,6 @@
 package ba.ibu.edu.budget_tracker.core.model;
-import jakarta.persistence.*;
 
-import java.util.List;
+import jakarta.persistence.*;
 
 @Entity(name = "budgets")
 public class Budget {
@@ -13,28 +12,29 @@ public class Budget {
     private Double amount;
 
     @Column(nullable = false)
-    private String month;
+    private Double remaining;
+
+    @Column(nullable = false)
+    private Integer month;
+
+    @Column(nullable = false)
+    private Integer year;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public Budget() {
-    }
+    public Budget() {}
 
-    public Budget(Long id, Double amount, String month, User user) {
-        this.id = id;
+    public Budget(Double amount, Double remaining, Integer month, Integer year, User user) {
         this.amount = amount;
+        this.remaining = remaining;
         this.month = month;
+        this.year = year;
         this.user = user;
     }
 
-    public Budget(Double amount, String month, User user) {
-        this.amount = amount;
-        this.month = month;
-        this.user = user;
-    }
-
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -51,12 +51,28 @@ public class Budget {
         this.amount = amount;
     }
 
-    public String getMonth() {
+    public Double getRemaining() {
+        return remaining;
+    }
+
+    public void setRemaining(Double remaining) {
+        this.remaining = remaining;
+    }
+
+    public Integer getMonth() {
         return month;
     }
 
-    public void setMonth(String month) {
+    public void setMonth(Integer month) {
         this.month = month;
+    }
+
+    public Integer getYear() {
+        return year;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
     }
 
     public User getUser() {

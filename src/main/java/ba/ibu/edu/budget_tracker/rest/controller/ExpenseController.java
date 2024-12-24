@@ -37,6 +37,16 @@ public class ExpenseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(expenseService.createExpense(request));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ExpenseDto> updateExpense(@PathVariable Long id, @RequestBody ExpenseRequest request) {
+        try {
+            ExpenseDto updatedExpense = expenseService.updateExpense(id, request);
+            return ResponseEntity.ok(updatedExpense);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteExpense(@PathVariable Long id) {
         try {
