@@ -50,6 +50,16 @@ export const useDeleteExpense = () => {
     });
 };
 
+export const useCategoryChartData = (
+    userId: number,
+    filters: { startDate?: Date | null; endDate?: Date | null }
+  ) => {
+    return useQuery<CategoryChartData[]>({
+      queryKey: ['chartData', userId, filters],
+      queryFn: () => getCategoryChartData(userId, filters)
+    });
+  };  
+
 ////////
 export const useUserBudget = (userId: number, month: number, year: number) => {
     return useQuery<Budget | null>({
@@ -81,9 +91,3 @@ export const useCreateExpense = () => {
     });
 };
 
-export const useCategoryChartData = (userId: number) => {
-    return useQuery<CategoryChartData[]>({
-        queryKey: ['chartData', userId],
-        queryFn: () => getCategoryChartData(userId),
-    });
-};

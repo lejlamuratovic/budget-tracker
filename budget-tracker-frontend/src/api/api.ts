@@ -27,6 +27,18 @@ export const deleteExpense = async (id: number): Promise<void> => {
     await api.delete(`/expenses/${id}`);
 };
 
+export const getCategoryChartData = async (
+    userId: number,
+    filters: { startDate?: Date | null; endDate?: Date | null }
+  ): Promise<CategoryChartData[]> => {
+    const params: { userId: number; startDate?: string; endDate?: string} = { userId };
+    if (filters.startDate) params.startDate = filters.startDate.toISOString().split("T")[0];
+    if (filters.endDate) params.endDate = filters.endDate.toISOString().split("T")[0];
+  
+    const response = await api.get<CategoryChartData[]>('/expenses/chart-data', { params });
+    return response.data;
+  };  
+
 //////////////
 
 export const getUserBudget = async (userId: number, month: number, year: number): Promise<Budget | null> => {
@@ -44,10 +56,6 @@ export const createBudget = async (budget: Partial<Budget>): Promise<Budget> => 
     return response.data;
 };
 
-export const getCategoryChartData = async (userId: number): Promise<CategoryChartData[]> => {
-    const response = await api.get<CategoryChartData[]>('/expenses/chart-data', { params: { userId } });
-    return response.data;
-};
 
 
 export default api;

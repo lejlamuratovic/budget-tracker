@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Typography, Grid, Button, Paper } from "@mui/material";
 import ExpenseOverview from "../components/ExpenseOverview";
 // import BudgetOverview from "../components/BudgetOverview";
-// import ChartOverview from "../components/ChartOverview";
+import ChartOverview from "../components/ChartOverview";
 
 const DashboardPage: React.FC = () => {
   const email = localStorage.getItem("email");
+  const [activeSection, setActiveSection] = useState<"expenses" | "charts" | "budgets">("expenses");
 
   if (!email) {
     return (
@@ -20,6 +21,8 @@ const DashboardPage: React.FC = () => {
       <Typography variant="h5" gutterBottom>
         Welcome, {email}
       </Typography>
+
+      {/* Section Selector */}
       <Grid container spacing={3}>
         {/* Expense Overview */}
         <Grid item xs={12} md={4}>
@@ -31,7 +34,7 @@ const DashboardPage: React.FC = () => {
               variant="contained"
               color="primary"
               fullWidth
-              href="#expenses"
+              onClick={() => setActiveSection("expenses")}
             >
               View Expenses
             </Button>
@@ -48,7 +51,7 @@ const DashboardPage: React.FC = () => {
               variant="contained"
               color="secondary"
               fullWidth
-              href="#charts"
+              onClick={() => setActiveSection("charts")}
             >
               View Charts
             </Button>
@@ -65,7 +68,7 @@ const DashboardPage: React.FC = () => {
               variant="contained"
               color="success"
               fullWidth
-              href="#budgets"
+              onClick={() => setActiveSection("budgets")}
             >
               View Budgets
             </Button>
@@ -73,15 +76,16 @@ const DashboardPage: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Sections */}
-      <Box id="expenses" sx={{ marginTop: "2rem" }}>
-        <ExpenseOverview userId={1} />
-      </Box>
-      <Box id="charts" sx={{ marginTop: "2rem" }}>
-        {/* <ChartOverview /> */}
-      </Box>
-      <Box id="budgets" sx={{ marginTop: "2rem" }}>
-        {/* <BudgetOverview /> */}
+      {/* Render Active Section */}
+      <Box sx={{ marginTop: "2rem" }}>
+        {activeSection === "expenses" && <ExpenseOverview userId={1} />}
+        {activeSection === "charts" && <ChartOverview userId={1} />}
+        {activeSection === "budgets" && (
+          <Box sx={{ textAlign: "center", padding: "2rem" }}>
+            {/* <BudgetOverview /> */}
+            <Typography variant="h6">Budget Overview Coming Soon!</Typography>
+          </Box>
+        )}
       </Box>
     </Box>
   );
