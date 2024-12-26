@@ -12,11 +12,11 @@ import ba.ibu.edu.budget_tracker.rest.dto.ExpenseRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.Calendar;
-import java.util.Date;
 
 @Service
 public class ExpenseService {
@@ -26,9 +26,13 @@ public class ExpenseService {
     private final BudgetService budgetService;
     private final BudgetRepository budgetRepository;
 
-    public ExpenseService(ExpenseRepository expenseRepository, UserService userService,
-                          CategoryService categoryService, BudgetService budgetService,
-                          BudgetRepository budgetRepository) {
+    public ExpenseService(
+            ExpenseRepository expenseRepository,
+            UserService userService,
+            CategoryService categoryService,
+            BudgetService budgetService,
+            BudgetRepository budgetRepository
+    ) {
         this.expenseRepository = expenseRepository;
         this.userService = userService;
         this.categoryService = categoryService;
@@ -62,14 +66,12 @@ public class ExpenseService {
     ) {
         List<Expense> expenses = expenseRepository.findByUserId(userId);
 
-        // Filter by category
         if (categoryId != null) {
             expenses = expenses.stream()
                     .filter(expense -> expense.getCategory().getId().equals(categoryId))
                     .toList();
         }
 
-        // Filter by date range
         if (startDate != null || endDate != null) {
             expenses = expenses.stream()
                     .filter(expense -> {
@@ -86,7 +88,6 @@ public class ExpenseService {
                     .toList();
         }
 
-        // Filter by month and/or year
         if (month != null || year != null) {
             expenses = expenses.stream()
                     .filter(expense -> {
@@ -104,7 +105,6 @@ public class ExpenseService {
                     .toList();
         }
 
-        // Filter by amount range
         if (minAmount != null || maxAmount != null) {
             expenses = expenses.stream()
                     .filter(expense -> {
@@ -120,7 +120,6 @@ public class ExpenseService {
                     .toList();
         }
 
-        // Map filtered expenses to DTOs
         return expenses.stream()
                 .map(expense -> new ExpenseDto(
                         expense.getId(),
@@ -134,14 +133,9 @@ public class ExpenseService {
     }
 
     @Transactional(readOnly = true)
-    public List<CategoryChartDto> getCategoryChartData(
-            Long userId,
-            Date startDate,
-            Date endDate
-    ) {
+    public List<CategoryChartDto> getCategoryChartData(Long userId, Date startDate, Date endDate) {
         List<Expense> expenses = expenseRepository.findByUserId(userId);
 
-        // Apply filters (similar logic as the filterExpenses method)
         if (startDate != null || endDate != null) {
             expenses = expenses.stream()
                     .filter(expense -> {
@@ -160,10 +154,10 @@ public class ExpenseService {
 
         // Group expenses by category and calculate totals
         return expenses.stream()
-                .collect(Collectors.groupingBy(expense -> expense.getCategory().getId(), Collectors.counting()))
+                .collect(Collectors.groupingBy(expense -> expense.getCategory().getName(), Collectors.counting()))
                 .entrySet().stream()
                 .map(entry -> new CategoryChartDto(
-                        entry.getKey(), // Category ID
+                        entry.getKey(), // Use category name
                         entry.getValue() // Count of expenses
                 ))
                 .toList();
@@ -191,13 +185,14 @@ public class ExpenseService {
         Integer year = extractYear(request.getDate());
 
         // Find the associated budget
-        Budget budget = budgetService.getBudgetByUserAndMonthAndYear(request.getUserId(), month, year);
+        Optional<Budget> budgetOptional = budgetService.getBudgetByUserAndMonthAndYear(request.getUserId(), month, year);
 
-        if (budget == null) {
-            throw new IllegalArgumentException("No budget found for the specified user, month, and year.");
+        if (budgetOptional.isEmpty()) {
+            throw new IllegalArgumentException("No budget set for the specified user, month, and year.");
         }
 
         // Adjust remaining amount in the budget (can go negative)
+        Budget budget = budgetOptional.get();
         budget.setRemaining(budget.getRemaining() - request.getAmount());
         budgetRepository.save(budget);
 
@@ -225,15 +220,14 @@ public class ExpenseService {
         Integer year = extractYear(expense.getDate());
 
         // Find the associated budget
-        Budget budget = budgetService.getBudgetByUserAndMonthAndYear(expense.getUser().getId(), month, year);
-
-        if (budget == null) {
-            throw new IllegalArgumentException("No budget found for the specified user, month, and year.");
-        }
+        Optional<Budget> budgetOptional = budgetService.getBudgetByUserAndMonthAndYear(expense.getUser().getId(), month, year);
 
         // Adjust remaining amount in the budget
-        budget.setRemaining(budget.getRemaining() + expense.getAmount());
-        budgetRepository.save(budget);
+        if (budgetOptional.isPresent()) {
+            Budget budget = budgetOptional.get();
+            budget.setRemaining(budget.getRemaining() + expense.getAmount());
+            budgetRepository.save(budget);
+        }
 
         // Delete the expense
         expenseRepository.deleteById(id);
@@ -248,13 +242,14 @@ public class ExpenseService {
                     Integer originalYear = extractYear(expense.getDate());
 
                     // Find the associated budget
-                    Budget budget = budgetService.getBudgetByUserAndMonthAndYear(expense.getUser().getId(), originalMonth, originalYear);
+                    Optional<Budget> budgetOptional = budgetService.getBudgetByUserAndMonthAndYear(expense.getUser().getId(), originalMonth, originalYear);
 
-                    if (budget == null) {
-                        throw new IllegalArgumentException("No budget found for the specified user, month, and year.");
+                    if (budgetOptional.isEmpty()) {
+                        throw new IllegalArgumentException("No budget set for the specified user, month, and year.");
                     }
 
                     // Adjust the remaining amount
+                    Budget budget = budgetOptional.get();
                     budget.setRemaining(budget.getRemaining() + expense.getAmount() - request.getAmount());
                     budgetRepository.save(budget);
 

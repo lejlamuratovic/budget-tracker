@@ -2,6 +2,7 @@ package ba.ibu.edu.budget_tracker.core.service;
 
 import ba.ibu.edu.budget_tracker.core.model.Category;
 import ba.ibu.edu.budget_tracker.core.repository.CategoryRepository;
+import ba.ibu.edu.budget_tracker.rest.dto.CategoryDto;
 import ba.ibu.edu.budget_tracker.rest.dto.CategoryRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,9 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    public List<CategoryRequest> getAllCategories() {
+    public List<CategoryDto> getAllCategories() {
         return categoryRepository.findAll().stream()
-                .map(category -> new CategoryRequest(category.getName()))
+                .map(category -> new CategoryDto(category.getId(), category.getName()))
                 .collect(Collectors.toList());
     }
 

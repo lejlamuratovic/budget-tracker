@@ -7,3 +7,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+sendgrid:
+  api-key: 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

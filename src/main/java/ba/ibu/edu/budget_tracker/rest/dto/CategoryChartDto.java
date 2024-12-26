@@ -1,20 +1,20 @@
 package ba.ibu.edu.budget_tracker.rest.dto;
 
 public class CategoryChartDto {
-    private Long categoryId;
+    private String categoryName;
     private Long expenseCount;
 
-    public CategoryChartDto(Long categoryId, Long expenseCount) {
-        this.categoryId = categoryId;
+    public CategoryChartDto(String categoryName, Long expenseCount) {
+        this.categoryName = categoryName;
         this.expenseCount = expenseCount;
     }
 
-    public Long getCategoryId() {
-        return categoryId;
+    public String getCategoryName() {
+        return categoryName;
     }
 
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     public Long getExpenseCount() {

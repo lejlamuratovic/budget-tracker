@@ -10,6 +10,7 @@ import ba.ibu.edu.budget_tracker.rest.dto.BudgetRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,9 +76,8 @@ public class BudgetService {
         );
     }
 
-    public Budget getBudgetByUserAndMonthAndYear(Long userId, Integer month, Integer year) {
-        return budgetRepository.findByUserIdAndMonthAndYear(userId, month, year)
-                .orElseThrow(() -> new IllegalArgumentException("Budget not found for the specified user, month, and year."));
+    public Optional<Budget> getBudgetByUserAndMonthAndYear(Long userId, int month, int year) {
+        return budgetRepository.findByUserIdAndMonthAndYear(userId, month, year);
     }
 
     public BudgetDto updateBudget(Long id, BudgetRequest request) {

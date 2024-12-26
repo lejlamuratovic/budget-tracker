@@ -1,6 +1,7 @@
 package ba.ibu.edu.budget_tracker.rest.controller;
 
 import ba.ibu.edu.budget_tracker.core.service.CategoryService;
+import ba.ibu.edu.budget_tracker.rest.dto.CategoryDto;
 import ba.ibu.edu.budget_tracker.rest.dto.CategoryRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,8 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryRequest>> getAllCategories() {
-        List<CategoryRequest> categories = categoryService.getAllCategories();
+    public ResponseEntity<List<CategoryDto>> getAllCategories() {
+        List<CategoryDto> categories = categoryService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
 
