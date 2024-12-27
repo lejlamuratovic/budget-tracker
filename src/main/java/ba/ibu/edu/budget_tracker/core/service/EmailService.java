@@ -6,7 +6,6 @@ import ba.ibu.edu.budget_tracker.rest.dto.BudgetDto;
 import ba.ibu.edu.budget_tracker.rest.dto.CategoryChartDto;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,11 +47,15 @@ public class EmailService {
                     .collect(Collectors.joining("\n")));
         }
 
-        // Send the email
-        if (emailClient.validateEmail(to)) {
+        // Validate and send the email
+        if (!emailClient.validateEmail(to)) {
+            throw new IllegalArgumentException("Invalid email address: " + to);
+        }
+
+        try {
             emailClient.sendEmail(to, emailBody.toString());
-        } else {
-            System.out.println("Invalid email address: " + to);
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to send email: " + ex.getMessage(), ex);
         }
     }
 }

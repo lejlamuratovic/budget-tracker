@@ -5,7 +5,7 @@ import BudgetOverview from "../components/BudgetOverview";
 import ChartOverview from "../components/ChartOverview";
 
 const DashboardPage: React.FC = () => {
-  const email = localStorage.getItem("email");
+  const email = localStorage.getItem("userEmail");
   const userId = localStorage.getItem("userId");
   const [activeSection, setActiveSection] = useState<"expenses" | "charts" | "budgets">("expenses");
 

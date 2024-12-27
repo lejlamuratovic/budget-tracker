@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Budget, Category, CategoryChartData, Expense, ExpenseFilterParams, User } from '../types';
+import { Budget, Category, CategoryChartData, EmailRequest, Expense, ExpenseFilterParams, User } from '../types';
 
 const api = axios.create({
     baseURL: 'http://localhost:8080/api/',
@@ -8,7 +8,6 @@ const api = axios.create({
     },
 });
 
-// GET Login
 export const getLoginUser = async (email: string): Promise<User | null> => {
     try {
         const response = await api.get<User>('/users/login', {
@@ -24,7 +23,6 @@ export const getLoginUser = async (email: string): Promise<User | null> => {
     }
 };
 
-// POST Login (Create User)
 export const postLoginUser = async (email: string): Promise<User> => {
     const response = await api.post<User>('/users/login', { email });
     return response.data;
@@ -78,6 +76,13 @@ export const createBudget = async (budget: Partial<Budget>): Promise<Budget> => 
 
 export const updateBudget = async (budgetId: number, budget: Partial<Budget>): Promise<Budget> => {
     const response = await api.put<Budget>(`/budgets/${budgetId}`, budget);
+    return response.data;
+};
+
+export const sendUserReportEmail = async (emailRequest: EmailRequest): Promise<string> => {
+    console.log(emailRequest);
+    
+    const response = await api.post<string>('/emails/send-report', emailRequest);
     return response.data;
 };
 

@@ -10,9 +10,10 @@ import {
     updateExpense,
     updateBudget,
     getLoginUser,
-    postLoginUser
+    postLoginUser,
+    sendUserReportEmail
 } from '../api/api';
-import { Budget, Expense, ExpenseFilterParams, CategoryChartData, Category, User } from '../types';
+import { Budget, Expense, ExpenseFilterParams, CategoryChartData, Category, User, EmailRequest } from '../types';
 
 
 // Login User
@@ -123,5 +124,12 @@ export const useCreateExpense = () => {
             // Invalidate expense queries to refresh expense list
             queryClient.invalidateQueries({ queryKey: ['expenses'] });
         },
+    });
+};
+
+// Send User Report
+export const useSendUserReportEmail = () => {
+    return useMutation<string, Error, EmailRequest>({
+        mutationFn: sendUserReportEmail,
     });
 };

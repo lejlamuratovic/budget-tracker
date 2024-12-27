@@ -11,8 +11,14 @@ import {
   CardHeader,
   CircularProgress,
 } from "@mui/material";
-import { useUserBudget, useUpdateBudget, useCreateBudget } from "../hooks/useApi";
+import {
+  useUserBudget,
+  useUpdateBudget,
+  useCreateBudget,
+  useSendUserReportEmail,
+} from "../hooks/useApi";
 import Loading from "./Loading";
+import ErrorAlert from "./ErrorAlert";
 
 interface BudgetOverviewProps {
   userId: number;
@@ -28,6 +34,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
   const [appliedFilters, setAppliedFilters] = useState(filters); // Tracks the filters applied when "Apply Filters" is clicked
   const [newBudgetAmount, setNewBudgetAmount] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { data: budget, isLoading, isError } = useUserBudget(
     userId,
@@ -37,7 +44,9 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
 
   const updateBudgetMutation = useUpdateBudget();
   const createBudgetMutation = useCreateBudget();
-  const isUpdating = updateBudgetMutation.isPending || createBudgetMutation.isPending;
+  const sendReportMutation = useSendUserReportEmail();
+  const isUpdating =
+    updateBudgetMutation.isPending || createBudgetMutation.isPending;
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -70,6 +79,10 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
           setIsEditing(false);
           setNewBudgetAmount(null);
         },
+        onError: (error) => {
+          setError("Failed to add budget. Please try again.");
+          console.error("Error adding budget:", error);
+        },
       }
     );
   };
@@ -85,6 +98,36 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
         onSuccess: () => {
           setIsEditing(false);
           setNewBudgetAmount(null);
+        },
+        onError: (error) => {
+          setError("Failed to update budget. Please try again.");
+          console.error("Error updating budget:", error);
+        },
+      }
+    );
+  };
+
+  const handleSendReport = () => {
+    const email = localStorage.getItem("userEmail");
+
+    if (!email) {
+      setError("Email address is not defined. Cannot send the report.");
+      return;
+    }
+
+    sendReportMutation.mutate(
+      {
+        userId: userId,
+        email: email,
+        month: appliedFilters.month,
+        year: appliedFilters.year,
+      },
+      {
+        onSuccess: () => {
+          setError(null);
+        },
+        onError: () => {
+          setError("Failed to send report. Please try again.");
         },
       }
     );
@@ -105,6 +148,8 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
       <Typography variant="h5" gutterBottom mb={4} mt={1}>
         Monthly Budget Overview
       </Typography>
+
+      {error && <ErrorAlert message={error} onClose={() => setError(null)} />}
 
       {/* Filters */}
       <Grid container spacing={2} sx={{ width: "100%" }}>
@@ -175,7 +220,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
 
       {/* Add or Edit Budget */}
       {isEditing ? (
-        <Box sx={{ marginTop: "2rem"}}>
+        <Box sx={{ marginTop: "2rem" }}>
           <TextField
             label="New Budget Amount"
             type="number"
@@ -183,7 +228,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
             value={newBudgetAmount || ""}
             onChange={(e) => setNewBudgetAmount(Number(e.target.value))}
             fullWidth
-            sx={{ maxWidth: "340px"}}
+            sx={{ maxWidth: "340px" }}
           />
           <Grid
             container
@@ -198,9 +243,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
               onClick={budget ? handleUpdateBudget : handleAddBudget}
               disabled={isUpdating}
             >
-              {isUpdating ? (
-                <CircularProgress size={20} />
-              ) : budget ? "Update Budget" : "Add Budget"}
+              {isUpdating ? <CircularProgress size={20} /> : budget ? "Update Budget" : "Add Budget"}
             </Button>
             <Button variant="outlined" onClick={() => setIsEditing(false)}>
               Cancel
@@ -208,7 +251,16 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
           </Grid>
         </Box>
       ) : (
-        <Box textAlign="left" sx={{ marginTop: "2rem" }}>
+        <Box
+          textAlign="left"
+          sx={{
+            marginTop: "2rem",
+            display: "flex",
+            justifyContent: "start",
+            alignItems: "start",
+            gap: 2,
+          }}
+        >
           <Button
             variant="contained"
             color="primary"
@@ -218,6 +270,14 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
             }}
           >
             {budget ? "Edit Budget" : "Add Budget"}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleSendReport}
+            disabled={sendReportMutation.isPending}
+          >
+            {sendReportMutation.isPending ? <CircularProgress size={20} /> : "Send Report"}
           </Button>
         </Box>
       )}

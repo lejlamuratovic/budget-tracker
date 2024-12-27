@@ -14,15 +14,16 @@ import java.io.IOException;
 public class SendGridClient implements EmailClient {
 
     private final String apiKey;
+    private final String fromEmail;
 
-    public SendGridClient(@Value("${sendgrid.api-key}") String apiKey) {
+    public SendGridClient(@Value("${sendgrid.api-key}") String apiKey, @Value("${sendgrid.from-email}") String fromEmail) {
         this.apiKey = apiKey;
+        this.fromEmail = fromEmail;
     }
 
     @Override
     public void sendEmail(String to, String body) {
-        String fromEmail = "lejla.muratovic@stu.ibu.edu.ba"; // Replace with your verified sender email
-        String subject = "Test Email from Budget Tracker";
+        String subject = "Budget Tracker";
 
         Email from = new Email(fromEmail);
         Email toEmail = new Email(to);
@@ -37,11 +38,11 @@ public class SendGridClient implements EmailClient {
             request.setBody(mail.build());
             Response response = sg.api(request);
 
-            System.out.println("Email sent! Status Code: " + response.getStatusCode());
-            System.out.println("Response Body: " + response.getBody());
-            System.out.println("Response Headers: " + response.getHeaders());
+            if (response.getStatusCode() >= 400) {
+                throw new IOException("Failed to send email. Status Code: " + response.getStatusCode() + ", Response: " + response.getBody());
+            }
         } catch (IOException ex) {
-            System.err.println("Failed to send email: " + ex.getMessage());
+            throw new RuntimeException("Error communicating with SendGrid: " + ex.getMessage(), ex);
         }
     }
 

@@ -45,3 +45,10 @@ export type ExpenseFilterParams = {
     month?: number | null;
     year?: number | null;
 }
+
+export type EmailRequest = {
+    email: string;
+    userId: number;
+    month: number;
+    year: number;
+}
