@@ -6,15 +6,8 @@ import ChartOverview from "../components/ChartOverview";
 
 const DashboardPage: React.FC = () => {
   const email = localStorage.getItem("email");
+  const userId = localStorage.getItem("userId");
   const [activeSection, setActiveSection] = useState<"expenses" | "charts" | "budgets">("expenses");
-
-  if (!email) {
-    return (
-      <Box sx={{ textAlign: "center", padding: "2rem" }}>
-        <Typography variant="h6">Please log in.</Typography>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ padding: "2rem" }}>
@@ -78,9 +71,9 @@ const DashboardPage: React.FC = () => {
 
       {/* Render Active Section */}
       <Box sx={{ marginTop: "2rem" }}>
-        {activeSection === "expenses" && <ExpenseOverview userId={1} />}
-        {activeSection === "charts" && <ChartOverview userId={1} />}
-        {activeSection === "budgets" && <BudgetOverview userId={1}/>}
+        {activeSection === "expenses" && <ExpenseOverview userId={parseInt(userId!)} />}
+        {activeSection === "charts" && <ChartOverview userId={parseInt(userId!)} />}
+        {activeSection === "budgets" && <BudgetOverview userId={parseInt(userId!)} />}
       </Box>
     </Box>
   );

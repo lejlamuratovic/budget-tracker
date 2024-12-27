@@ -19,12 +19,6 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(user -> new UserDto(user.getId(), user.getEmail()))
-                .collect(Collectors.toList());
-    }
-
     public Optional<UserDto> getUserById(Long id) {
         return userRepository.findById(id)
                 .map(user -> new UserDto(user.getId(), user.getEmail()));
@@ -35,27 +29,14 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
     }
 
-    public UserDto createUser(UserRequest request) {
-        User user = new User();
-        user.setEmail(request.getEmail());
-        User savedUser = userRepository.save(user);
-        return new UserDto(savedUser.getId(), savedUser.getEmail());
+    public Optional<UserDto> findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(user -> new UserDto(user.getId(), user.getEmail()));
     }
 
-    public UserDto updateUser(Long id, UserRequest request) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    user.setEmail(request.getEmail());
-                    User updatedUser = userRepository.save(user);
-                    return new UserDto(updatedUser.getId(), updatedUser.getEmail());
-                })
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
-    }
-
-    public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new IllegalArgumentException("User not found with id: " + id);
-        }
-        userRepository.deleteById(id);
+    public UserDto createUser(String email) {
+        User newUser = new User(email);
+        userRepository.save(newUser);
+        return new UserDto(newUser.getId(), newUser.getEmail());
     }
 }

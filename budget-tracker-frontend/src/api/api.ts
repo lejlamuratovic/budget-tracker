@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Budget, Category, CategoryChartData, Expense, ExpenseFilterParams } from '../types';
+import { Budget, Category, CategoryChartData, Expense, ExpenseFilterParams, User } from '../types';
 
 const api = axios.create({
     baseURL: 'http://localhost:8080/api/',
@@ -7,6 +7,28 @@ const api = axios.create({
         'Content-Type': 'application/json',
     },
 });
+
+// GET Login
+export const getLoginUser = async (email: string): Promise<User | null> => {
+    try {
+        const response = await api.get<User>('/users/login', {
+            params: { email },
+        });
+        return response.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+        if (error.response?.status === 404) {
+            return null;
+        }
+        throw error;
+    }
+};
+
+// POST Login (Create User)
+export const postLoginUser = async (email: string): Promise<User> => {
+    const response = await api.post<User>('/users/login', { email });
+    return response.data;
+};
 
 export const getAllExpenses = async (params: ExpenseFilterParams): Promise<Expense[]> => {
     const response = await api.get<Expense[]>('/expenses/filter', { params });

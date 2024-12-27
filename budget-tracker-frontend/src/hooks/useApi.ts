@@ -8,9 +8,29 @@ import {
     deleteExpense,
     getAllCategories,
     updateExpense,
-    updateBudget
+    updateBudget,
+    getLoginUser,
+    postLoginUser
 } from '../api/api';
-import { Budget, Expense, ExpenseFilterParams, CategoryChartData, Category } from '../types';
+import { Budget, Expense, ExpenseFilterParams, CategoryChartData, Category, User } from '../types';
+
+
+// Login User
+export const useLogin = () => {
+    return useMutation<User, Error, string>({
+        mutationFn: async (email: string) => {
+            // Try GET login first
+            const user = await getLoginUser(email);
+
+            // If GET fails, fallback to POST login
+            if (!user) {
+                return postLoginUser(email);
+            }
+
+            return user;
+        }
+    });
+};
 
 // Get All Expenses
 export const useExpenses = (params: ExpenseFilterParams) => {
