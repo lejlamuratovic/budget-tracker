@@ -25,42 +25,11 @@ public class BudgetService {
         this.userService = userService;
     }
 
-    public List<BudgetDto> getAllBudgets() {
-        return budgetRepository.findAll().stream()
-                .map(budget -> new BudgetDto(
-                        budget.getId(),
-                        budget.getAmount(),
-                        budget.getRemaining(),
-                        budget.getMonth(),
-                        budget.getYear(),
-                        budget.getUser().getId()
-                ))
-                .collect(Collectors.toList());
-    }
-
-    public List<BudgetDto> getBudgetsByUserId(Long userId) {
-        return budgetRepository.findByUserId(userId).stream()
-                .map(budget -> new BudgetDto(
-                        budget.getId(),
-                        budget.getAmount(),
-                        budget.getRemaining(),
-                        budget.getMonth(),
-                        budget.getYear(),
-                        budget.getUser().getId()
-                ))
-                .collect(Collectors.toList());
-    }
-
-    public Budget getBudgetEntityById(Long id) {
-        return budgetRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Budget not found with id: " + id));
-    }
-
     public BudgetDto createBudget(BudgetRequest request) {
         User user = userService.getUserEntityById(request.getUserId());
         Budget budget = new Budget(
                 request.getAmount(),
-                request.getAmount(), // Set initial remaining equal to the budget amount
+                request.getAmount(),
                 request.getMonth(),
                 request.getYear(),
                 user

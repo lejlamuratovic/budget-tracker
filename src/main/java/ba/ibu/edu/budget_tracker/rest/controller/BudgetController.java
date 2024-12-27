@@ -21,12 +21,6 @@ public class BudgetController {
         this.budgetService = budgetService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<BudgetDto>> getAllBudgets() {
-        List<BudgetDto> budgets = budgetService.getAllBudgets();
-        return ResponseEntity.ok(budgets);
-    }
-
     @GetMapping("/user")
     public ResponseEntity<BudgetDto> getBudget(
             @RequestParam Long userId,

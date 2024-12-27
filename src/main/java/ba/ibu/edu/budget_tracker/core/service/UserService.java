@@ -19,11 +19,6 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public Optional<UserDto> getUserById(Long id) {
-        return userRepository.findById(id)
-                .map(user -> new UserDto(user.getId(), user.getEmail()));
-    }
-
     public User getUserEntityById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));

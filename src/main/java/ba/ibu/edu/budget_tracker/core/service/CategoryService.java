@@ -34,27 +34,4 @@ public class CategoryService {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + id));
     }
-
-    public CategoryRequest createCategory(CategoryRequest request) {
-        Category category = new Category(request.getName());
-        Category savedCategory = categoryRepository.save(category);
-        return new CategoryRequest(savedCategory.getName());
-    }
-
-    public CategoryRequest updateCategory(Long id, CategoryRequest request) {
-        return categoryRepository.findById(id)
-                .map(category -> {
-                    category.setName(request.getName());
-                    Category updatedCategory = categoryRepository.save(category);
-                    return new CategoryRequest(updatedCategory.getName());
-                })
-                .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + id));
-    }
-
-    public void deleteCategory(Long id) {
-        if (!categoryRepository.existsById(id)) {
-            throw new IllegalArgumentException("Category not found with id: " + id);
-        }
-        categoryRepository.deleteById(id);
-    }
 }

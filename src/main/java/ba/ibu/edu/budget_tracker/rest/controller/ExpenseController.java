@@ -19,14 +19,9 @@ import java.util.List;
 public class ExpenseController {
     private final ExpenseService expenseService;
 
-    @Autowired
+
     public ExpenseController(ExpenseService expenseService) {
         this.expenseService = expenseService;
-    }
-
-    @GetMapping
-    public ResponseEntity<List<ExpenseDto>> getAllExpenses() {
-        return ResponseEntity.ok(expenseService.getAllExpenses());
     }
 
     @GetMapping("/filter")
@@ -51,13 +46,6 @@ public class ExpenseController {
                 maxAmount
         );
         return ResponseEntity.ok(filteredExpenses);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ExpenseDto> getExpenseById(@PathVariable Long id) {
-        return expenseService.getExpenseById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/chart-data")
