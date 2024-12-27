@@ -7,7 +7,8 @@ import {
     createBudget,
     deleteExpense,
     getAllCategories,
-    updateExpense
+    updateExpense,
+    updateBudget
 } from '../api/api';
 import { Budget, Expense, ExpenseFilterParams, CategoryChartData, Category } from '../types';
 
@@ -50,6 +51,7 @@ export const useDeleteExpense = () => {
     });
 };
 
+// Get Category Chart Data
 export const useCategoryChartData = (
     userId: number,
     filters: { startDate?: Date | null; endDate?: Date | null }
@@ -58,9 +60,9 @@ export const useCategoryChartData = (
       queryKey: ['chartData', userId, filters],
       queryFn: () => getCategoryChartData(userId, filters)
     });
-  };  
+};  
 
-////////
+// Get User Budget
 export const useUserBudget = (userId: number, month: number, year: number) => {
     return useQuery<Budget | null>({
         queryKey: ['budget', userId, month, year],
@@ -68,6 +70,19 @@ export const useUserBudget = (userId: number, month: number, year: number) => {
     });
 };
 
+// Update Budget
+export const useUpdateBudget = () => {
+    const queryClient = useQueryClient();
+    return useMutation<Budget, unknown, { budgetId: number; budget: Partial<Budget> }, unknown>({
+        mutationFn: ({ budgetId, budget }) => updateBudget(budgetId, budget),
+        onSuccess: () => {
+            // Invalidate budget queries to ensure fresh data
+            queryClient.invalidateQueries({ queryKey: ['budget'] });
+        },
+    });
+};
+
+// Create Budget
 export const useCreateBudget = () => {
     const queryClient = useQueryClient();
     return useMutation<Budget, unknown, Partial<Budget>, unknown>({
@@ -79,7 +94,7 @@ export const useCreateBudget = () => {
     });
 };
 
-
+// Create Expense
 export const useCreateExpense = () => {
     const queryClient = useQueryClient();
     return useMutation<Expense, unknown, Partial<Expense>, unknown>({
@@ -90,4 +105,3 @@ export const useCreateExpense = () => {
         },
     });
 };
-

@@ -39,8 +39,6 @@ export const getCategoryChartData = async (
     return response.data;
   };  
 
-//////////////
-
 export const getUserBudget = async (userId: number, month: number, year: number): Promise<Budget | null> => {
     const response = await api.get<Budget | null>('/budgets/user', { params: { userId, month, year } });
     return response.data;
@@ -56,6 +54,9 @@ export const createBudget = async (budget: Partial<Budget>): Promise<Budget> => 
     return response.data;
 };
 
-
+export const updateBudget = async (budgetId: number, budget: Partial<Budget>): Promise<Budget> => {
+    const response = await api.put<Budget>(`/budgets/${budgetId}`, budget);
+    return response.data;
+};
 
 export default api;

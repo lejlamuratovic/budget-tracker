@@ -17,6 +17,7 @@ import { ExpenseFilterParams, Expense } from "../types";
 import Loading from "./Loading";
 import ExpenseEditModal from "./ExpenseEditModal";
 import ExpenseRow from "./ExpenseRow";
+import ErrorAlert from "./ErrorAlert";
 
 const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
   const queryClient = useQueryClient();
@@ -32,8 +33,9 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
     year: null,
   });
   const [tempFilters, setTempFilters] = useState<ExpenseFilterParams>({ ...filters });
+  const [error, setError] = useState<string | null>(null);
 
-  const { data: expenses = [], isLoading, isError } = useExpenses(filters);
+  const { data: expenses = [], isLoading } = useExpenses(filters);
   const { data: categories = [] } = useCategories();
   const deleteExpense = useDeleteExpense();
 
@@ -77,8 +79,13 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
   };
 
   const handleDeleteExpense = (expenseId: number) => {
+    setError(null); // Clear any existing errors
     deleteExpense.mutate(expenseId, {
       onSuccess: () => queryClient.invalidateQueries({ queryKey: ["expenses"] }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onError: (err: any) => {
+        setError(err.response?.data?.message || "An unexpected error occurred.");
+      },
     });
   };
 
@@ -86,10 +93,6 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
     setSelectedExpense(null);
     setModalMode("add");
   };
-
-  if (isError) {
-    return <Typography>Error fetching expenses.</Typography>;
-  }
 
   return (
     <Paper sx={{ padding: "1rem" }}>
@@ -103,6 +106,9 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
           <AddIcon />
         </IconButton>
       </Typography>
+
+      {/* Error Alert */}
+      {error && <ErrorAlert message={error} onClose={() => setError(null)} />}
 
       {/* Filters */}
       <Box component="form" sx={{ marginBottom: "1rem" }}>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, Typography, Grid, Button, Paper } from "@mui/material";
 import ExpenseOverview from "../components/ExpenseOverview";
-// import BudgetOverview from "../components/BudgetOverview";
+import BudgetOverview from "../components/BudgetOverview";
 import ChartOverview from "../components/ChartOverview";
 
 const DashboardPage: React.FC = () => {
@@ -80,12 +80,7 @@ const DashboardPage: React.FC = () => {
       <Box sx={{ marginTop: "2rem" }}>
         {activeSection === "expenses" && <ExpenseOverview userId={1} />}
         {activeSection === "charts" && <ChartOverview userId={1} />}
-        {activeSection === "budgets" && (
-          <Box sx={{ textAlign: "center", padding: "2rem" }}>
-            {/* <BudgetOverview /> */}
-            <Typography variant="h6">Budget Overview Coming Soon!</Typography>
-          </Box>
-        )}
+        {activeSection === "budgets" && <BudgetOverview userId={1}/>}
       </Box>
     </Box>
   );

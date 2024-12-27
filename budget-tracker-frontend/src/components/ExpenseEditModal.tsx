@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { useCategories, useCreateExpense, useUpdateExpense } from "../hooks/useApi";
 import { Expense } from "../types";
+import ErrorAlert from "./ErrorAlert";
 
 interface ExpenseEditModalProps {
   mode: "add" | "edit";
@@ -19,7 +20,13 @@ interface ExpenseEditModalProps {
   onSuccess: () => void;
 }
 
-const ExpenseEditModal: React.FC<ExpenseEditModalProps> = ({ mode, expense, onClose, onSuccess, userId }) => {
+const ExpenseEditModal: React.FC<ExpenseEditModalProps> = ({
+  mode,
+  expense,
+  onClose,
+  onSuccess,
+  userId,
+}) => {
   const { data: categories = [] } = useCategories();
   const createExpense = useCreateExpense();
   const updateExpense = useUpdateExpense();
@@ -29,8 +36,10 @@ const ExpenseEditModal: React.FC<ExpenseEditModalProps> = ({ mode, expense, onCl
     amount: expense?.amount || 0,
     date: expense?.date || "",
     categoryId: expense?.categoryId || 1,
-    userId: userId
+    userId: userId,
   });
+
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -43,23 +52,33 @@ const ExpenseEditModal: React.FC<ExpenseEditModalProps> = ({ mode, expense, onCl
   };
 
   const handleSubmit = () => {
+    setError(null);
+    
     if (mode === "add") {
       createExpense.mutate(formData, {
         onSuccess: () => {
           onSuccess();
           onClose();
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onError: (err: any) => {
+          setError(err.response?.data?.message || "An unexpected error occurred.");
+        },
       });
     } else if (mode === "edit" && expense && expense.id) {
       updateExpense.mutate(
-        { 
-          id: expense.id, 
-          expense: { ...formData, userId: expense.userId } 
+        {
+          id: expense.id,
+          expense: { ...formData, userId: expense.userId },
         },
         {
           onSuccess: () => {
             onSuccess();
             onClose();
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onError: (err: any) => {
+            setError(err.response?.data?.message || "An unexpected error occurred.");
           },
         }
       );
@@ -70,6 +89,7 @@ const ExpenseEditModal: React.FC<ExpenseEditModalProps> = ({ mode, expense, onCl
     <Dialog open onClose={onClose} fullWidth>
       <DialogTitle>{mode === "add" ? "Add New Expense" : "Edit Expense"}</DialogTitle>
       <DialogContent>
+        {error && <ErrorAlert message={error} onClose={() => setError(null)} />}
         <TextField
           label="Title"
           name="title"
@@ -94,7 +114,7 @@ const ExpenseEditModal: React.FC<ExpenseEditModalProps> = ({ mode, expense, onCl
           fullWidth
           margin="normal"
           InputLabelProps={{ shrink: true }}
-          value={formData.date.split("T")[0]} // Ensure proper date format
+          value={formData.date.split("T")[0]}
           onChange={handleInputChange}
         />
         <TextField

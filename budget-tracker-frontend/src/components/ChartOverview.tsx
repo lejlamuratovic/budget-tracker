@@ -3,13 +3,16 @@ import {
   Box,
   Typography,
   Paper,
-  CircularProgress,
   Grid,
   TextField,
   Button,
+  Card,
+  CardContent
 } from "@mui/material";
 import { PieChart, Pie, Tooltip, Cell, ResponsiveContainer } from "recharts";
 import { useCategoryChartData } from "../hooks/useApi";
+import Loading from "./Loading";
+import ErrorAlert from "./ErrorAlert";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A569BD", "#F5B041"];
 
@@ -22,6 +25,7 @@ const ChartOverview: React.FC<ChartOverviewProps> = ({ userId }) => {
     startDate: null as Date | null,
     endDate: null as Date | null,
   });
+  const [error, setError] = useState<string | null>(null);
 
   const { data: chartData = [], isLoading, isError } = useCategoryChartData(userId, filters);
 
@@ -40,19 +44,7 @@ const ChartOverview: React.FC<ChartOverviewProps> = ({ userId }) => {
   };
 
   if (isLoading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Typography color="error" align="center">
-        Error loading chart data. Please try again.
-      </Typography>
-    );
+    return <Loading />;
   }
 
   return (
@@ -60,6 +52,17 @@ const ChartOverview: React.FC<ChartOverviewProps> = ({ userId }) => {
       <Typography variant="h5" gutterBottom textAlign="start" mb={4} mt={1}>
         Expense Chart Overview
       </Typography>
+
+      {/* Error Alert */}
+      {error && <ErrorAlert message={error} onClose={() => setError(null)} />}
+      {isError && (
+        <ErrorAlert
+          message="Error loading chart data. Please try again."
+          onClose={() => setError(null)}
+        />
+      )}
+
+      {/* Filters */}
       <Box sx={{ marginBottom: "1rem" }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={3}>
@@ -105,11 +108,13 @@ const ChartOverview: React.FC<ChartOverviewProps> = ({ userId }) => {
           </Grid>
         </Grid>
       </Box>
+
+      {/* Chart Data */}
       {chartData.length === 0 ? (
         <Typography align="center">No data available to display the chart.</Typography>
       ) : (
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={8}>
+        <Grid container spacing={4} alignItems="center">
+          <Grid item xs={12} md={6}>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -133,12 +138,27 @@ const ChartOverview: React.FC<ChartOverviewProps> = ({ userId }) => {
           <Grid item xs={12} md={4}>
             <Box>
               <Typography variant="h6" gutterBottom>
-                Summary:
+                Summary
               </Typography>
               {chartData.map((item, index) => (
-                <Typography key={index}>
-                  {item.categoryName}: {item.expenseCount} expenses
-                </Typography>
+                <Card
+                  key={index}
+                  elevation={3}
+                  sx={{
+                    marginBottom: "1rem",
+                    backgroundColor: COLORS[index % COLORS.length],
+                    color: "white",
+                  }}
+                >
+                  <CardContent>
+                    <Typography variant="subtitle1">
+                      <strong>{item.categoryName}</strong>
+                    </Typography>
+                    <Typography>
+                      {item.expenseCount} {item.expenseCount > 1 ? "expenses" : "expense"}
+                    </Typography>
+                  </CardContent>
+                </Card>
               ))}
             </Box>
           </Grid>
