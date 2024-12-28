@@ -7,7 +7,7 @@ import {
   Typography,
   CircularProgress,
 } from '@mui/material';
-import { useLogin } from '../hooks/useApi';
+import { useLogin } from '../hooks';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {

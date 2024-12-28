@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Box, Typography, Grid, Button, Paper } from "@mui/material";
-import ExpenseOverview from "../components/ExpenseOverview";
-import BudgetOverview from "../components/BudgetOverview";
-import ChartOverview from "../components/ChartOverview";
+import { ExpenseOverview, ChartOverview, BudgetOverview } from "../components/index";
 
 const DashboardPage: React.FC = () => {
   const email = localStorage.getItem("userEmail");

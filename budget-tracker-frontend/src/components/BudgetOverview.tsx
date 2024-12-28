@@ -11,14 +11,15 @@ import {
   CardHeader,
   CircularProgress,
 } from "@mui/material";
+
 import {
   useUserBudget,
   useUpdateBudget,
   useCreateBudget,
   useSendUserReportEmail,
-} from "../hooks/useApi";
-import Loading from "./Loading";
-import ErrorAlert from "./ErrorAlert";
+} from "../hooks";
+
+import { Loading, CustomAlert } from "./";
 
 interface BudgetOverviewProps {
   userId: number;
@@ -34,7 +35,9 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
   const [appliedFilters, setAppliedFilters] = useState(filters); // Tracks the filters applied when "Apply Filters" is clicked
   const [newBudgetAmount, setNewBudgetAmount] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ type: "error" | "success" | "info"; message: string } | null>(
+    null
+  );
 
   const { data: budget, isLoading, isError } = useUserBudget(
     userId,
@@ -78,9 +81,10 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
         onSuccess: () => {
           setIsEditing(false);
           setNewBudgetAmount(null);
+          setAlert({ type: "success", message: "Budget added successfully!" });
         },
         onError: (error) => {
-          setError("Failed to add budget. Please try again.");
+          setAlert({ type: "error", message: "Failed to add budget. Please try again." });
           console.error("Error adding budget:", error);
         },
       }
@@ -98,9 +102,10 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
         onSuccess: () => {
           setIsEditing(false);
           setNewBudgetAmount(null);
+          setAlert({ type: "success", message: "Budget updated successfully!" });
         },
         onError: (error) => {
-          setError("Failed to update budget. Please try again.");
+          setAlert({ type: "error", message: "Failed to update budget. Please try again." });
           console.error("Error updating budget:", error);
         },
       }
@@ -111,7 +116,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
     const email = localStorage.getItem("userEmail");
 
     if (!email) {
-      setError("Email address is not defined. Cannot send the report.");
+      setAlert({ type: "error", message: "Email address is not defined. Cannot send the report." });
       return;
     }
 
@@ -124,10 +129,10 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
       },
       {
         onSuccess: () => {
-          setError(null);
+          setAlert({ type: "success", message: "Report sent successfully!" });
         },
         onError: () => {
-          setError("Failed to send report. Please try again.");
+          setAlert({ type: "error", message: "Failed to send report. Please try again." });
         },
       }
     );
@@ -149,7 +154,13 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ userId }) => {
         Monthly Budget Overview
       </Typography>
 
-      {error && <ErrorAlert message={error} onClose={() => setError(null)} />}
+      {alert && (
+        <CustomAlert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
 
       {/* Filters */}
       <Grid container spacing={2} sx={{ width: "100%" }}>

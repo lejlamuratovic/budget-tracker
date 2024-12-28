@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>ba.ibu.edu</groupId>
-	<artifactId>budget-tracker</artifactId>
+	<artifactId>budgettracker</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>budget-tracker</name>
 	<description>Budget Tracker project for Spring Boot</description>

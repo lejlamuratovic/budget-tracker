@@ -10,9 +10,10 @@ import {
   CardContent
 } from "@mui/material";
 import { PieChart, Pie, Tooltip, Cell, ResponsiveContainer } from "recharts";
-import { useCategoryChartData } from "../hooks/useApi";
-import Loading from "./Loading";
-import ErrorAlert from "./ErrorAlert";
+
+import { useCategoryChartData } from "../hooks";
+
+import { CustomAlert, Loading } from ".";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A569BD", "#F5B041"];
 
@@ -25,9 +26,12 @@ const ChartOverview: React.FC<ChartOverviewProps> = ({ userId }) => {
     startDate: null as Date | null,
     endDate: null as Date | null,
   });
-  const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ type: "error" | "success"; message: string } | null>(null);
 
-  const { data: chartData = [], isLoading, isError } = useCategoryChartData(userId, filters);
+  const { data: chartData = [], isLoading } = useCategoryChartData({
+    ...filters,
+    userId,
+  });
 
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -54,11 +58,11 @@ const ChartOverview: React.FC<ChartOverviewProps> = ({ userId }) => {
       </Typography>
 
       {/* Error Alert */}
-      {error && <ErrorAlert message={error} onClose={() => setError(null)} />}
-      {isError && (
-        <ErrorAlert
-          message="Error loading chart data. Please try again."
-          onClose={() => setError(null)}
+      {alert && (
+        <CustomAlert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
         />
       )}
 
@@ -115,7 +119,7 @@ const ChartOverview: React.FC<ChartOverviewProps> = ({ userId }) => {
       ) : (
         <Grid container spacing={4} alignItems="center">
           <Grid item xs={12} md={6}>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={500}>
               <PieChart>
                 <Pie
                   data={chartData}

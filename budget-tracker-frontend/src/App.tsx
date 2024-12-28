@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
+
+import { LoginPage, DashboardPage } from './pages';
 
 const App: React.FC = () => {
   return (

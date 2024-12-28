@@ -12,12 +12,11 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useQueryClient } from "@tanstack/react-query";
-import { useExpenses, useDeleteExpense, useCategories } from "../hooks/useApi";
+
+import { useExpenses, useDeleteExpense, useCategories } from "../hooks";
 import { ExpenseFilterParams, Expense } from "../types";
-import Loading from "./Loading";
-import ExpenseEditModal from "./ExpenseEditModal";
-import ExpenseRow from "./ExpenseRow";
-import ErrorAlert from "./ErrorAlert";
+
+import { Loading, ExpenseModal, ExpenseRow, CustomAlert } from "./";
 
 const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
   const queryClient = useQueryClient();
@@ -33,13 +32,14 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
     year: null,
   });
   const [tempFilters, setTempFilters] = useState<ExpenseFilterParams>({ ...filters });
-  const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ type: "error" | "success" | "info"; message: string } | null>(
+    null
+  );
 
   const { data: expenses = [], isLoading } = useExpenses(filters);
   const { data: categories = [] } = useCategories();
   const deleteExpense = useDeleteExpense();
 
-  // State for managing the modal
   const [modalMode, setModalMode] = useState<"add" | "edit" | null>(null);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
@@ -79,12 +79,15 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
   };
 
   const handleDeleteExpense = (expenseId: number) => {
-    setError(null); // Clear any existing errors
+    setAlert(null); // Clear any existing alerts
     deleteExpense.mutate(expenseId, {
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: ["expenses"] }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["expenses"] });
+        setAlert({ type: "info", message: "Expense deleted successfully!" });
+      },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onError: (err: any) => {
-        setError(err.response?.data?.message || "An unexpected error occurred.");
+        setAlert({ type: "error", message: err.response?.data?.message || "An unexpected error occurred." });
       },
     });
   };
@@ -107,8 +110,14 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
         </IconButton>
       </Typography>
 
-      {/* Error Alert */}
-      {error && <ErrorAlert message={error} onClose={() => setError(null)} />}
+      {/* Alert */}
+      {alert && (
+        <CustomAlert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
 
       {/* Filters */}
       <Box component="form" sx={{ marginBottom: "1rem" }}>
@@ -122,7 +131,7 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
               size="small"
               InputLabelProps={{ shrink: true }}
               onChange={handleTempFilterChange}
-              value={tempFilters.startDate ? tempFilters.startDate.toISOString().split("T")[0] : ""}
+              value={tempFilters.startDate || ""}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -134,7 +143,7 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
               size="small"
               InputLabelProps={{ shrink: true }}
               onChange={handleTempFilterChange}
-              value={tempFilters.endDate ? tempFilters.endDate.toISOString().split("T")[0] : ""}
+              value={tempFilters.endDate || ""}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -235,7 +244,7 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
 
       {/* Modal for Add or Edit */}
       {modalMode && (
-        <ExpenseEditModal
+        <ExpenseModal
           mode={modalMode}
           userId={userId}
           expense={modalMode === "edit" && selectedExpense ? selectedExpense : undefined}
@@ -243,6 +252,7 @@ const ExpenseOverview: React.FC<{ userId: number }> = ({ userId = 1 }) => {
           onSuccess={() => {
             setModalMode(null);
             queryClient.invalidateQueries({ queryKey: ["expenses"] });
+            setAlert({ type: "info", message: "Expense added/updated successfully!" });
           }}
         />
       )}

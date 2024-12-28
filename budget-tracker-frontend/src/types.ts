@@ -52,3 +52,5 @@ export type EmailRequest = {
     month: number;
     year: number;
 }
+
+export const BASE_URL = 'http://localhost:8080/api/';
