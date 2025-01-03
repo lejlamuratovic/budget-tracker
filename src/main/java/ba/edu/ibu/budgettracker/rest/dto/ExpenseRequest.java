@@ -11,7 +11,7 @@ public class ExpenseRequest {
 
     public ExpenseRequest() {}
 
-    public ExpenseRequest(String title, Double amount, Date date, Long categoryId, Long userId, Long budgetId) {
+    public ExpenseRequest(String title, Double amount, Date date, Long categoryId, Long userId) {
         this.title = title;
         this.amount = amount;
         this.date = date;
