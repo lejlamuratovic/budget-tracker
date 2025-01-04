@@ -5,6 +5,6 @@ RUN mvn clean package -DskipTests
 
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY --from=build /app/target/budget-tracker-0.0.1-SNAPSHOT.jar budget-tracker.jar
+COPY --from=build /app/target/budgettracker-0.0.1-SNAPSHOT.jar budget-tracker.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "budget-tracker.jar"]
