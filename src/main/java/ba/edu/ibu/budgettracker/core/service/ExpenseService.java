@@ -7,6 +7,7 @@ import ba.edu.ibu.budgettracker.core.model.User;
 import ba.edu.ibu.budgettracker.core.repository.BudgetRepository;
 import ba.edu.ibu.budgettracker.core.repository.ExpenseRepository;
 import ba.edu.ibu.budgettracker.rest.dto.CategoryChartDto;
+import ba.edu.ibu.budgettracker.rest.dto.DailyExpenseDto;
 import ba.edu.ibu.budgettracker.rest.dto.ExpenseDto;
 import ba.edu.ibu.budgettracker.rest.dto.ExpenseRequest;
 import org.springframework.stereotype.Service;
@@ -129,6 +130,54 @@ public class ExpenseService {
                         expense.getCategory().getId(),
                         expense.getUser().getId()
                 ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<DailyExpenseDto> getDailyExpenseOverview(Long userId, Date startDate, Date endDate) {
+        List<Expense> expenses = expenseRepository.findByUserId(userId);
+
+        // Filter by date range if provided
+        if (startDate != null || endDate != null) {
+            expenses = expenses.stream()
+                    .filter(expense -> {
+                        Date expenseDate = expense.getDate();
+                        boolean matches = true;
+                        if (startDate != null) {
+                            matches = matches && !expenseDate.before(startDate);
+                        }
+                        if (endDate != null) {
+                            matches = matches && !expenseDate.after(endDate);
+                        }
+                        return matches;
+                    })
+                    .toList();
+        }
+
+        // Group expenses by date and calculate totals
+        return expenses.stream()
+                .collect(Collectors.groupingBy(
+                        expense -> expense.getDate(),
+                        Collectors.toList()
+                ))
+                .entrySet().stream()
+                .map(entry -> {
+                    Date date = entry.getKey();
+                    List<Expense> dailyExpenses = entry.getValue();
+                    double totalAmount = dailyExpenses.stream()
+                            .mapToDouble(Expense::getAmount)
+                            .sum();
+
+                    List<DailyExpenseDto.ExpenseDetail> expenseDetails = dailyExpenses.stream()
+                            .map(e -> new DailyExpenseDto.ExpenseDetail(
+                                    e.getTitle(),
+                                    e.getAmount(),
+                                    e.getCategory().getName()
+                            ))
+                            .toList();
+
+                    return new DailyExpenseDto(date, totalAmount, expenseDetails);
+                })
                 .toList();
     }
 
