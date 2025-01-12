@@ -2,6 +2,7 @@ package ba.edu.ibu.budgettracker.rest.controller;
 
 import ba.edu.ibu.budgettracker.core.service.ExpenseService;
 import ba.edu.ibu.budgettracker.rest.dto.CategoryChartDto;
+import ba.edu.ibu.budgettracker.rest.dto.DailyExpenseDto;
 import ba.edu.ibu.budgettracker.rest.dto.ExpenseDto;
 import ba.edu.ibu.budgettracker.rest.dto.ExpenseRequest;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -44,6 +45,16 @@ public class ExpenseController {
                 maxAmount
         );
         return ResponseEntity.ok(filteredExpenses);
+    }
+
+    @GetMapping("/daily-overview")
+    public ResponseEntity<List<DailyExpenseDto>> getDailyExpenseOverview(
+            @RequestParam Long userId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate
+    ) {
+        List<DailyExpenseDto> dailyOverview = expenseService.getDailyExpenseOverview(userId, startDate, endDate);
+        return ResponseEntity.ok(dailyOverview);
     }
 
     @GetMapping("/chart-data")
