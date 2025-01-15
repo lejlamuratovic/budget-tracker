@@ -185,6 +185,7 @@ public class ExpenseService {
     public List<CategoryChartDto> getCategoryChartData(Long userId, Date startDate, Date endDate) {
         List<Expense> expenses = expenseRepository.findByUserId(userId);
 
+        // Filter by date range if provided
         if (startDate != null || endDate != null) {
             expenses = expenses.stream()
                     .filter(expense -> {
@@ -201,14 +202,42 @@ public class ExpenseService {
                     .toList();
         }
 
-        // Group expenses by category and calculate totals
+        // Group expenses by category
         return expenses.stream()
-                .collect(Collectors.groupingBy(expense -> expense.getCategory().getName(), Collectors.counting()))
+                .collect(Collectors.groupingBy(Expense::getCategory))
                 .entrySet().stream()
-                .map(entry -> new CategoryChartDto(
-                        entry.getKey(), // Use category name
-                        entry.getValue() // Count of expenses
-                ))
+                .map(entry -> {
+                    Category category = entry.getKey();
+                    List<Expense> categoryExpenses = entry.getValue();
+
+                    // Map each expense to its DTO
+                    List<ExpenseDto> expenseDtos = categoryExpenses.stream()
+                            .map(expense -> new ExpenseDto(
+                                    expense.getId(),
+                                    expense.getTitle(),
+                                    expense.getAmount(),
+                                    expense.getDate(),
+                                    expense.getCategory().getId(),
+                                    expense.getUser().getId()
+                            ))
+                            .toList();
+
+                    // Calculate total amount for the category
+                    double totalAmount = categoryExpenses.stream()
+                            .mapToDouble(Expense::getAmount)
+                            .sum();
+
+                    // Count the number of expenses in the category
+                    long expenseCount = categoryExpenses.size();
+
+                    // Return the DTO with category name, total, count, and expenses
+                    return new CategoryChartDto(
+                            category.getName(),
+                            totalAmount,
+                            expenseCount,  // Include count
+                            expenseDtos    // List of expenses for the category
+                    );
+                })
                 .toList();
     }
 
